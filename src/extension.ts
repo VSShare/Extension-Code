@@ -12,7 +12,10 @@ import View from './view';
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "vsshare" is now active!'); 
 
-	let logger = new Logger();
+	var config = vscode.workspace.getConfiguration('vsshare');
+	var logLevel = config['logLevel'];
+
+	let logger = new Logger(logLevel);
  	let view = new View();
  	let controller = new Controller(context, logger, view);
  

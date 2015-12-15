@@ -70,6 +70,11 @@
           "type": "string",
           "default": "",
           "description": "Specify the room token for your broadcast target of VSShare server"
+        },
+        "vsshare.logLevel": {
+          "type": "number",
+          "default": 1,
+          "description": "[For Server Developer]: Specify log level to show log window.(0: Debug, 1:Info, 2:Warn, 3:Error)"
         }
       }
     }

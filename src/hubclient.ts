@@ -14,8 +14,9 @@ var signalR = require('signalr-client');
 
 enum SignalRStatus {
     Connecting = 0,
-    Connected = 1,
-    Reconnecting = 2,
+    SignIn = 1,
+    Connected = 2,
+    Reconnecting = 3,
     Disconnected = 4
 };
 
@@ -28,8 +29,7 @@ export class HubClient implements Disposable {
 
     private _currentStatus: SignalRStatus = SignalRStatus.Disconnected;
 
-    private _hub: HubProxy;
-    private _client: SignalR;
+    private _client;
 
     private _userName: string;
     private _accessToken: string;
@@ -48,42 +48,78 @@ export class HubClient implements Disposable {
 
     startBroadcast(url: string, hubName: string, userName: string, accessToken: string, roomName: string, roomToken: string) {
         const self = this;
+        
+        this._logger.appendLog("a", LogType.Debug);
+        this._logger.appendLog("a", LogType.Info);
+        this._logger.appendLog("a", LogType.Warn);
+        this._logger.appendLog("a", LogType.Error);
 
         this._url = url;
         this._hubName = hubName;
+        self.changeBroadcastStatus(SignalRStatus.Connecting);
 
-        this._client = $.hubConnection(url);
-        this._hub = this._client.hub.createHubProxy(hubName);
+        var signalR = require('signalr-client');
 
-        this._client.hub.disconnected(() => {
-            window.showWarningMessage(`Disconnected connection to ${self._hubName} on ${self._hubName}`);
-            self._isAuthorized = false;
-        });
+        this._client = new signalR.client(url, [hubName], 10, true);
 
-        this._client.hub.stateChanged((status) => {
-            var oldStatus: SignalRStatus = status.oldState;
-            var newStatus: SignalRStatus = status.newState;
-            self._currentStatus = newStatus;
-            self._logger.appendLog(`Status changed from ${oldStatus} to ${newStatus}.`, LogType.Info);
+        this._client.serviceHandlers = {
+            bound: () => { console.log("Websocket bound"); },
+            connectFailed: (error) => {
+                let message = `Failed to etablish connection to ${self._hubName} on ${self._hubName}`;
+                window.showErrorMessage(message);
+                self._logger.appendLog(message, LogType.Error);
+                self.changeBroadcastStatus(SignalRStatus.Disconnected);
 
-            var icon: string = "";
-            switch (newStatus) {
-                case SignalRStatus.Connected:
-                    icon = "$(check)";
-                    break;
-                case SignalRStatus.Connecting:
-                    icon = "$(sync)";
-                    break;
-                case SignalRStatus.Disconnected:
-                    icon = "$(primitive-square)";
-                    break;
-                case SignalRStatus.Reconnecting:
-                    icon = "$(sync)";
-                    break;
+                self._isAuthorized = false;
+                self._sessionId = null;
+            },
+            connected: (connection) => {
+                let message = `Established connection to ${self._hubName} on ${self._hubName}`;
+                window.showInformationMessage(message);
+                self._logger.appendLog(message, LogType.Info);
+                self.changeBroadcastStatus(SignalRStatus.SignIn);
+
+                self.sendAuthorization();
+            },
+            disconnected: () => {
+                let message = `Disconnected connection to ${self._hubName} on ${self._hubName}`;
+                window.showInformationMessage(message);
+                self._logger.appendLog(message, LogType.Info);
+                self.changeBroadcastStatus(SignalRStatus.Disconnected);
+
+                self._isAuthorized = false;
+                self._sessionId = null;
+            },
+            onerror: (error) => {
+                let message = `An error has occured on WebSocket. ${error}`;
+                self._logger.appendLog(message, LogType.Debug);
+            },
+            messageReceived: (message) => {
+                self._logger.appendLog(`Received message on WebSocket. ${message}`, LogType.Debug);
+                return false;
+            },
+            bindingError: (error) => {
+                self._logger.appendLog(`Binding error on WebSocket. ${error}`, LogType.Debug);
+            },
+            onUnauthorized: (res) => {
+                self._logger.appendLog(`OnUnauthorized on WebSocket. ${res}`, LogType.Debug);
+            },
+            connectionLost: (error) => {
+                self._logger.appendLog(`Connection lost on WebSocket. ${error}`, LogType.Debug);
+            },
+            reconnected: (connection) => {
+                self._logger.appendLog("Reconnected", LogType.Info);
+                
+                self.changeBroadcastStatus(SignalRStatus.Connected);
+            },
+            reconnecting: (retry /* { inital: true/false, count: 0} */) => {
+                self._logger.appendLog("Reconnecting...", LogType.Info);
+                
+                self.changeBroadcastStatus(SignalRStatus.Reconnecting);
+                //return retry.count >= 3; /* cancel retry true */
+                return true;
             }
-
-            self._view.changeStatus(SignalRStatus[newStatus]);
-        });
+        };
 
         this._userName = userName;
         this._accessToken = accessToken;
@@ -91,30 +127,46 @@ export class HubClient implements Disposable {
         this._roomToken = roomToken;
         
         //接続開始
-        this._client.start().done(() => {
-            window.showInformationMessage(`Established connection to ${self._hubName} on ${self._hubName}`);
-            // 認証
-            self.sendAuthorization();
-        });
+        this._client.start();
+    }
+
+    private changeBroadcastStatus(status: SignalRStatus) {
+        var message: string = "";
+        switch (status) {
+            case SignalRStatus.Connected:
+                message = "$(check) Connected";
+                break;
+            case SignalRStatus.SignIn:
+                message = "$(sign-in) Signing-in";
+                break;
+            case SignalRStatus.Connecting:
+                message = "$(sync) Connecting";
+                break;
+            case SignalRStatus.Disconnected:
+                message = "$(primitive-square) Disconnected";
+                break;
+            case SignalRStatus.Reconnecting:
+                message = "$(sync) Reconnecting";
+                break;
+        }
+        this._view.changeStatus(message);
     }
 
     private sendAuthorization() {
         const self = this;
         var data: AuthorizeBroadcasterRequest = { "user_name": this._userName, "access_token": this._accessToken, "room_name": this._roomName, "room_token": this._roomToken };
-        this._hub.invoke("Authorize", JSON.stringify(data)).done((response) => {
-            var result: AuthorizeBroadcasterResponse = JSON.parse(response);
+        this._client.call(this._hubName, "Authorize", data).done((err, res) => {
+            var result: AuthorizeBroadcasterResponse = res;
             if (result != null && result.success) {
                 self._isAuthorized = true;
                 let message = `Authentication success.(User: ${self._userName}) Now, Broadcasting to ${self._roomName}`;
                 self._logger.appendLog(message, LogType.Info);
                 window.showInformationMessage(message);
+
                 this._sessionId = null;
+
                 self.registerSession();
             }
-        }).fail((error) => {
-            let message = `Authentication failed.(User: ${self._userName}, Room: ${self._roomName})`;
-            self._logger.appendLog(`${message}, Error: ${error}`, LogType.Error);
-            window.showErrorMessage(message);
         });
     }
 
@@ -122,72 +174,61 @@ export class HubClient implements Disposable {
         const self = this;
 
         var data: AppendSessionRequest = { "filename": "", "type": ContentType.PlainText };
-        this._hub.invoke("AppendSession", JSON.stringify(data)).done((response) => {
-            var result: AppendSessionResponse = JSON.parse(response);
+        this._client.call(this._hubName, "AppendSession", data).done((err, response) => {
+            var result: AppendSessionResponse = response;
             if (result != null && result.success) {
                 self._sessionId = result.id;
                 let message = `Registered session.(Session Id: ${self._sessionId})`;
                 self._logger.appendLog(message, LogType.Info);
+                self.changeBroadcastStatus(SignalRStatus.Connected);
             }
-        }).fail((error) => {
-            self._logger.appendLog(`Failed to register session. ${error}`, LogType.Error);
         });
     }
 
     private removeSession() {
-        if (!this._sessionId)
-            return;
+        if (!this._sessionId) return;
 
         const self = this;
 
         var data: RemoveSessionRequest = { "id": this._sessionId };
-        this._hub.invoke("RemoveSession", JSON.stringify(data)).done(() => {
+        this._client.call(this._hubName, "RemoveSession", data).done(() => {
             self._sessionId = null;
             let message = `Removed session.(Session Id: ${self._sessionId})`;
             self._logger.appendLog(message, LogType.Info);
-        }).fail((error) => {
-            self._logger.appendLog(`Failed to remove session. ${error}`, LogType.Error);
         });
     }
 
     stopBroadcast() {
-        this._client.stop();
+        if (this._client != null) {
+            this._client.end();
+        }
     }
 
     updateSessionContent(item: UpdateContentData[]) {
-        if (!this._isAuthorized || !this._sessionId)
-            return;
+        if (!this._isAuthorized || !this._sessionId) return;
 
         var request: UpdateSessionContentRequest = { "id": this._sessionId, "data": item };
         const self = this;
 
-        this._hub.invoke("UpdateSessionContent", JSON.stringify(request)).fail((error) => {
-            self._logger.appendLog(`Failed to update session content. ${error}`, LogType.Error);
-        });
+        this._client.call(this._hubName, "UpdateSessionContent", request);
     }
 
     updateSessionInfo(filename: string, type: ContentType) {
-        if (!this._isAuthorized || !this._sessionId)
-            return;
+        if (!this._isAuthorized || !this._sessionId) return;
 
         var request: UpdateSessionInfoRequest = { "id": this._sessionId, "filename": filename, "type": type };
         const self = this;
 
-        this._hub.invoke("UpdateSessionInfo", JSON.stringify(request)).fail((error) => {
-            self._logger.appendLog(`Failed to update session info. ${error}`, LogType.Error);
-        });
+        this._client.call(this._hubName,"UpdateSessionInfo", request);
     }
 
     updateSessionCursor(anchor: CursorPosition, active: CursorPosition, type: CursorType) {
-        if (!this._isAuthorized || !this._sessionId)
-            return;
+        if (!this._isAuthorized || !this._sessionId) return;
 
         var request: UpdateSessionCursorRequest = { "id": this._sessionId, "anchor": anchor, "active": active, "type": type };
         const self = this;
 
-        this._hub.invoke("UpdateSessionCursor", JSON.stringify(request)).fail((error) => {
-            self._logger.appendLog(`Failed to update session cursor. ${error}`, LogType.Error);
-        });
+        this._client.call(this._hubName,"UpdateSessionCursor", request);
     }
 
     getStatus(): SignalRStatus {
@@ -197,5 +238,4 @@ export class HubClient implements Disposable {
     dispose() {
         this._client.stop();
     }
-
 }

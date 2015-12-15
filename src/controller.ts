@@ -63,7 +63,7 @@ export default class Controller implements vscode.Disposable {
 
 	activate() {
 		const self = this;
-		this._config = vscode.workspace.getConfiguration('vscode');
+		this._config = vscode.workspace.getConfiguration('vsshare');
 
 		this._hubClient = new HubClient(this._logger, this._view);
 		this._documentManager = new DocumentManager(this._hubClient, this._logger);
