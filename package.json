@@ -1,31 +1,88 @@
 {
-	"name": "vsshare",
-	"displayName": "VSShare",
-	"description": "VSShare broadcast extension for Visual Studio Code.",
-	"version": "0.0.1",
-	"publisher": "bonprosoft",
-	"engines": {
-		"vscode": "^0.10.1"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"onCommand:extension.sayHello"
-	],
-	"main": "./out/src/extension",
-	"contributes": {
-		"commands": [{
-			"command": "extension.sayHello",
-			"title": "Hello World"
-		}]
-	},
-	"scripts": {
-		"vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
-	},
-	"devDependencies": {
-		"typescript": "^1.6.2",
-		"vscode": "0.10.x"
-	}
+  "name": "vsshare",
+  "displayName": "VSShare",
+  "description": "VSShare broadcast extension for Visual Studio Code.",
+  "version": "0.0.1",
+  "publisher": "bonprosoft",
+  "engines": {
+    "vscode": "^0.10.1"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/src/extension",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vsshare.startBroadcast",
+        "title": "Start Broadcasting"
+      },
+      {
+        "command": "vsshare.stopBroadcast",
+        "title": "Stop Broadcasting"
+      },
+      {
+        "command": "vsshare.restartBroadcast",
+        "title": "Restart Broadcasting"
+      },
+      {
+        "command": "vsshare.refreshBroadcast",
+        "title": "Refresh Broadcasting"
+      },
+      {
+        "command": "vsshare.showLogWindow",
+        "title": "Show Broadcasting window"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "VSShare configuration",
+      "properties": {
+        "vsshare.hubName": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the consumer key of your twitter app"
+        },
+        "vsshare.url": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the consumer secret of your twitter app"
+        },
+        "vsshare.userName": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the consumer key of your twitter app"
+        },
+        "vsshare.userToken": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the consumer secret of your twitter app"
+        },
+        "vsshare.roomName": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the access token of your twitter app"
+        },
+        "vsshare.roomToken": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the access token secret of your twitter app"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
+    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
+  },
+  "devDependencies": {
+    "typescript": "^1.6.2",
+    "vscode": "0.10.x"
+  },
+  "dependencies": {
+    "signalr-client": "0.0.16"
+  }
 }
