@@ -43,33 +43,33 @@
       "properties": {
         "vsshare.hubName": {
           "type": "string",
-          "default": "",
-          "description": "Specify the consumer key of your twitter app"
+          "default": "broadcast",
+          "description": "Specify the hub name of your VSShare server"
         },
         "vsshare.url": {
           "type": "string",
-          "default": "",
-          "description": "Specify the consumer secret of your twitter app"
+          "default": "http://vsshare.net/signalr",
+          "description": "Specify the url of your VSShare server"
         },
         "vsshare.userName": {
           "type": "string",
           "default": "",
-          "description": "Specify the consumer key of your twitter app"
+          "description": "Specify the username of your VSShare server account"
         },
         "vsshare.userToken": {
           "type": "string",
           "default": "",
-          "description": "Specify the consumer secret of your twitter app"
+          "description": "Specify the access token of your VSShare server account"
         },
         "vsshare.roomName": {
           "type": "string",
           "default": "",
-          "description": "Specify the access token of your twitter app"
+          "description": "Specify the room name for your broadcast target of VSShare server"
         },
         "vsshare.roomToken": {
           "type": "string",
           "default": "",
-          "description": "Specify the access token secret of your twitter app"
+          "description": "Specify the room token for your broadcast target of VSShare server"
         }
       }
     }
