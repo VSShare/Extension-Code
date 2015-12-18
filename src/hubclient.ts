@@ -5,10 +5,11 @@
 
 'use strict';
 
-import EditorManager from './document-manager';
+import DocumentManager from './document-manager';
 import {window, Disposable} from 'vscode';
 import {Logger, LogType} from './logger';
 import View from './view';
+import Controller from './controller';
 
 var signalR = require('signalr-client');
 
@@ -26,6 +27,7 @@ export class HubClient implements Disposable {
 
     private _logger: Logger;
     private _view: View;
+    private _controller: Controller;
 
     private _currentStatus: SignalRStatus = SignalRStatus.Disconnected;
 
@@ -40,9 +42,10 @@ export class HubClient implements Disposable {
 
     private _isAuthorized: boolean = false;
 
-    constructor(logger: Logger, view: View) {
+    constructor(logger: Logger, view: View, controller: Controller) {
         this._logger = logger;
         this._view = view;
+        this._controller = controller;
     }
 
     startBroadcast(url: string, hubName: string, userName: string, accessToken: string, roomName: string, roomToken: string) {
@@ -176,14 +179,8 @@ export class HubClient implements Disposable {
 
     private registerSession() {
         const self = this;
-        let fileName = "";
-        let activeDocument = window.activeTextEditor || null;
-        if (activeDocument)
-        {
-            fileName = activeDocument.document.fileName;
-        }
 
-        var data: AppendSessionRequest = { "filename": fileName, "type": ContentType.PlainText };
+        var data: AppendSessionRequest = { "filename": "", "type": ContentType.PlainText };
         this._client.call(this._hubName, "AppendSession", data).done((err, response) => {
             var result: AppendSessionResponse = response;
             if (result != null && result.success) {
@@ -191,6 +188,7 @@ export class HubClient implements Disposable {
                 let message = `Registered session.(Session Id: ${self._sessionId})`;
                 self._logger.appendLog(message, LogType.Info);
                 self.changeBroadcastStatus(SignalRStatus.Connected);
+                self._controller.refreshBroadcast();
             }
         });
     }

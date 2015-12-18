@@ -65,7 +65,7 @@ export default class Controller implements vscode.Disposable {
 	activate() {
 		const self = this;
 
-		this._hubClient = new HubClient(this._logger, this._view);
+		this._hubClient = new HubClient(this._logger, this._view, this);
 		this._documentManager = new DocumentManager(this._hubClient, this._logger);
 		this._documentManager.active();
 
@@ -78,8 +78,12 @@ export default class Controller implements vscode.Disposable {
 		this._eventEmitter.on(Controller.StartBroadcastCommand, () => { self.startBroadcast(); });
 		this._eventEmitter.on(Controller.StopBroadcastCommand, () => { self.stopBroadcast(); });
 		this._eventEmitter.on(Controller.RestartBroadcastCommand, () => { self.stopBroadcast(); self.startBroadcast(); });
-		this._eventEmitter.on(Controller.RefreshBroadcastCommand, () => { self._documentManager.resendActiveDocument(); });
+		this._eventEmitter.on(Controller.RefreshBroadcastCommand, () => { self.refreshBroadcast(); });
 		this._eventEmitter.on(Controller.ShowLogWindowCommand, () => { self._logger.showWindow(); });
+	}
+	
+	refreshBroadcast() {
+		this._documentManager.resendActiveDocument();
 	}
 
 	dispose() {
