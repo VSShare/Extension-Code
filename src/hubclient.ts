@@ -47,6 +47,10 @@ export class HubClient implements Disposable {
         this._view = view;
         this._controller = controller;
     }
+    
+    isConnected() {
+        return (this._currentStatus != SignalRStatus.Disconnected);
+    }
 
     startBroadcast(url: string, hubName: string, userName: string, accessToken: string, roomName: string, roomToken: string) {
         const self = this;

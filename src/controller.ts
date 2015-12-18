@@ -34,8 +34,13 @@ export default class Controller implements vscode.Disposable {
 	}
 
 	private startBroadcast() {
+		if (this._hubClient.isConnected()) {
+			vscode.window.showErrorMessage('You need to stop current connection.');
+			return;
+		}
+
 		let config = vscode.workspace.getConfiguration('vsshare');
-		
+
 		var endpointUrl = config['url'] || Controller.DefaultEndpointUrl;
 		var hubName = config['hubName'] || Controller.DefaultHubName;
 
@@ -81,7 +86,7 @@ export default class Controller implements vscode.Disposable {
 		this._eventEmitter.on(Controller.RefreshBroadcastCommand, () => { self.refreshBroadcast(); });
 		this._eventEmitter.on(Controller.ShowLogWindowCommand, () => { self._logger.showWindow(); });
 	}
-	
+
 	refreshBroadcast() {
 		this._documentManager.resendActiveDocument();
 	}
