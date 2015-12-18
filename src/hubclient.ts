@@ -103,12 +103,12 @@ export class HubClient implements Disposable {
             },
             reconnected: (connection) => {
                 self._logger.appendLog("Reconnected", LogType.Info);
-                
+
                 self.changeBroadcastStatus(SignalRStatus.Connected);
             },
             reconnecting: (retry /* { inital: true/false, count: 0} */) => {
                 self._logger.appendLog("Reconnecting...", LogType.Info);
-                
+
                 self.changeBroadcastStatus(SignalRStatus.Reconnecting);
                 //return retry.count >= 3; /* cancel retry true */
                 return true;
@@ -157,10 +157,20 @@ export class HubClient implements Disposable {
                 self._logger.appendLog(message, LogType.Info);
                 window.showInformationMessage(message);
 
-                this._sessionId = null;
+                self._sessionId = null;
 
                 self.registerSession();
+            } else {
+                let message = `Authentication failed.(User: ${self._userName})`;
+                self._logger.appendLog(message, LogType.Error);
+                window.showErrorMessage(message);
+                self.disposeConnection();
             }
+        }).fail((err) => {
+            let message = `Authentication failed.(User: ${self._userName})`;
+            self._logger.appendLog(message, LogType.Error);
+            window.showErrorMessage(message);
+            self.disposeConnection();
         });
     }
 
@@ -192,10 +202,18 @@ export class HubClient implements Disposable {
         });
     }
 
-    stopBroadcast() {
+    private disposeConnection() {
+        this._isAuthorized = false;
+        this._sessionId = null;
+        this.changeBroadcastStatus(SignalRStatus.Disconnected);
         if (this._client != null) {
             this._client.end();
+            this._client = null;
         }
+    }
+
+    stopBroadcast() {
+        this.disposeConnection();
     }
 
     updateSessionContent(item: UpdateContentData[]) {
@@ -213,7 +231,7 @@ export class HubClient implements Disposable {
         var request: UpdateSessionInfoRequest = { "id": this._sessionId, "filename": filename, "type": type };
         const self = this;
 
-        this._client.call(this._hubName,"UpdateSessionInfo", request);
+        this._client.call(this._hubName, "UpdateSessionInfo", request);
     }
 
     updateSessionCursor(anchor: CursorPosition, active: CursorPosition, type: CursorType) {
@@ -222,7 +240,7 @@ export class HubClient implements Disposable {
         var request: UpdateSessionCursorRequest = { "id": this._sessionId, "anchor": anchor, "active": active, "type": type };
         const self = this;
 
-        this._client.call(this._hubName,"UpdateSessionCursor", request);
+        this._client.call(this._hubName, "UpdateSessionCursor", request);
     }
 
     getStatus(): SignalRStatus {
