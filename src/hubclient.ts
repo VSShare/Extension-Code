@@ -176,8 +176,14 @@ export class HubClient implements Disposable {
 
     private registerSession() {
         const self = this;
+        let fileName = "";
+        let activeDocument = window.activeTextEditor || null;
+        if (activeDocument)
+        {
+            fileName = activeDocument.document.fileName;
+        }
 
-        var data: AppendSessionRequest = { "filename": "", "type": ContentType.PlainText };
+        var data: AppendSessionRequest = { "filename": fileName, "type": ContentType.PlainText };
         this._client.call(this._hubName, "AppendSession", data).done((err, response) => {
             var result: AppendSessionResponse = response;
             if (result != null && result.success) {
