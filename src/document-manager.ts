@@ -34,7 +34,7 @@ export default class DocumentManager implements vscode.Disposable {
 
     private onActiveTextEditorChanged(arg: vscode.TextEditor) {
         this._activeDocumentPath = arg.document.fileName;
-        this.resendDocument(arg.document);
+        this.resendActiveDocument();
     }
 
     private onTextDocumentChanged(arg: vscode.TextDocumentChangeEvent) {
