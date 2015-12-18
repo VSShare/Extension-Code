@@ -27,7 +27,12 @@ export default class DocumentManager implements vscode.Disposable {
 
         var anchor: CursorPosition = { "line": arg.selections[0].anchor.line, "pos": arg.selections[0].anchor.character };
         var active: CursorPosition = { "line": arg.selections[0].active.line, "pos": arg.selections[0].active.character };
+
         var type: CursorType = CursorType.Select;
+        
+        if (arg.selections[0].anchor.isEqual(arg.selections[0].active)){
+            type = CursorType.Point;
+        }
 
         this._hubClient.updateSessionCursor(anchor, active, type);
     }
