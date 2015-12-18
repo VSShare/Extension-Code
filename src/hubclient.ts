@@ -1,7 +1,7 @@
 /// <reference path="../typings/signalr/signalr.d.ts" />
 /// <reference path="../typings/jquery/jquery.d.ts" />
 /// <reference path="../typings/node/node.d.ts" />
-/// <reference path="../typings/vsshare/vsshare.d.ts" />
+/// <reference path="../typings/vsshare/typings/vsshare/vsshare.d.ts" />
 
 'use strict';
 
@@ -49,7 +49,7 @@ export class HubClient implements Disposable {
     }
     
     isConnected() {
-        return (this._currentStatus != SignalRStatus.Disconnected);
+        return (this._client != null);
     }
 
     startBroadcast(url: string, hubName: string, userName: string, accessToken: string, roomName: string, roomToken: string) {
@@ -117,8 +117,7 @@ export class HubClient implements Disposable {
                 self._logger.appendLog("Reconnecting...", LogType.Info);
 
                 self.changeBroadcastStatus(SignalRStatus.Reconnecting);
-                //return retry.count >= 3; /* cancel retry true */
-                return true;
+                return retry.count >= 3; /* cancel retry true */
             }
         };
 
@@ -184,7 +183,7 @@ export class HubClient implements Disposable {
     private registerSession() {
         const self = this;
 
-        var data: AppendSessionRequest = { "filename": "", "type": ContentType.PlainText };
+        var data: AppendSessionRequest = { "filename": "", "type": "" };
         this._client.call(this._hubName, "AppendSession", data).done((err, response) => {
             var result: AppendSessionResponse = response;
             if (result != null && result.success) {
@@ -233,7 +232,7 @@ export class HubClient implements Disposable {
         this._client.call(this._hubName, "UpdateSessionContent", request);
     }
 
-    updateSessionInfo(filename: string, type: ContentType) {
+    updateSessionInfo(filename: string, type: string) {
         if (!this._isAuthorized || !this._sessionId) return;
 
         var request: UpdateSessionInfoRequest = { "id": this._sessionId, "filename": filename, "type": type };

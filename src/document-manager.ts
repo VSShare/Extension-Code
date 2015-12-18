@@ -93,7 +93,7 @@ export default class DocumentManager implements vscode.Disposable {
         var document = vscode.window.activeTextEditor || null;
 
         if (document) {
-            this._hubClient.updateSessionInfo(document.document.fileName, ContentType.PlainText);
+            this._hubClient.updateSessionInfo(document.document.fileName, `code:${document.document.languageId}`);
             this.resendDocument(document.document);
         } else {
             this.resendDocument(null);
