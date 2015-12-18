@@ -16,7 +16,6 @@ export default class Controller implements vscode.Disposable {
 	private _extensionContext: vscode.ExtensionContext;
 	private _eventEmitter: events.EventEmitter = new events.EventEmitter();
 	private _hubClient: HubClient;
-	private _config: vscode.WorkspaceConfiguration;
 
 	static StartBroadcastCommand: string = "vsshare.startBroadcast";
 	static StopBroadcastCommand: string = "vsshare.stopBroadcast";
@@ -35,13 +34,15 @@ export default class Controller implements vscode.Disposable {
 	}
 
 	private startBroadcast() {
-		var endpointUrl = this._config['url'] || Controller.DefaultEndpointUrl;
-		var hubName = this._config['hubName'] || Controller.DefaultHubName;
+		let config = vscode.workspace.getConfiguration('vsshare');
+		
+		var endpointUrl = config['url'] || Controller.DefaultEndpointUrl;
+		var hubName = config['hubName'] || Controller.DefaultHubName;
 
-		var userName: string = this._config['userName'] || null;
-		var userToken: string = this._config['userToken'] || null;
-		var roomName: string = this._config['roomName'] || null;
-		var roomToken: string = this._config['roomToken'] || null;
+		var userName: string = config['userName'] || null;
+		var userToken: string = config['userToken'] || null;
+		var roomName: string = config['roomName'] || null;
+		var roomToken: string = config['roomToken'] || null;
 
 		if (!userName || !userToken || !roomName || !roomToken) {
 			vscode.window.showErrorMessage('You need to set preference field before using VSShare.');
@@ -63,7 +64,6 @@ export default class Controller implements vscode.Disposable {
 
 	activate() {
 		const self = this;
-		this._config = vscode.workspace.getConfiguration('vsshare');
 
 		this._hubClient = new HubClient(this._logger, this._view);
 		this._documentManager = new DocumentManager(this._hubClient, this._logger);

@@ -40,7 +40,6 @@ export class HubClient implements Disposable {
 
     private _isAuthorized: boolean = false;
 
-
     constructor(logger: Logger, view: View) {
         this._logger = logger;
         this._view = view;
@@ -48,11 +47,6 @@ export class HubClient implements Disposable {
 
     startBroadcast(url: string, hubName: string, userName: string, accessToken: string, roomName: string, roomToken: string) {
         const self = this;
-        
-        this._logger.appendLog("a", LogType.Debug);
-        this._logger.appendLog("a", LogType.Info);
-        this._logger.appendLog("a", LogType.Warn);
-        this._logger.appendLog("a", LogType.Error);
 
         this._url = url;
         this._hubName = hubName;
