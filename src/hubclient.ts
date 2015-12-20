@@ -47,7 +47,7 @@ export class HubClient implements Disposable {
         this._view = view;
         this._controller = controller;
     }
-    
+
     isConnected() {
         return (this._client != null);
     }
@@ -69,10 +69,8 @@ export class HubClient implements Disposable {
                 let message = `Failed to etablish connection to ${self._hubName} on ${self._hubName}`;
                 window.showErrorMessage(message);
                 self._logger.appendLog(message, LogType.Error);
-                self.changeBroadcastStatus(SignalRStatus.Disconnected);
 
-                self._isAuthorized = false;
-                self._sessionId = null;
+                self.disposeConnection();
             },
             connected: (connection) => {
                 let message = `Established connection to ${self._hubName} on ${self._hubName}`;
@@ -86,10 +84,8 @@ export class HubClient implements Disposable {
                 let message = `Disconnected connection to ${self._hubName} on ${self._hubName}`;
                 window.showInformationMessage(message);
                 self._logger.appendLog(message, LogType.Info);
-                self.changeBroadcastStatus(SignalRStatus.Disconnected);
 
-                self._isAuthorized = false;
-                self._sessionId = null;
+                self.disposeConnection();
             },
             onerror: (error) => {
                 let message = `An error has occured on WebSocket. ${error}`;
