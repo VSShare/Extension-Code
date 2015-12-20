@@ -90,7 +90,6 @@ export default class DocumentManager implements vscode.Disposable {
             content.push({ "text": document.getText(), "modified": false });
             item.push({ "type": UpdateType.Append, "data": content, "pos": 0, "len": 0, "order": 0 });
         }
-
         this._hubClient.updateSessionContent(item);
     }
 
@@ -100,6 +99,17 @@ export default class DocumentManager implements vscode.Disposable {
         if (document) {
             this._hubClient.updateSessionInfo(document.document.fileName, `code:${document.document.languageId}`);
             this.resendDocument(document.document);
+            var selection = document.selection;
+            if (selection != null){
+                var anchor: CursorPosition = { "line": selection.anchor.line, "pos": selection.anchor.character };
+                var active: CursorPosition = { "line": selection.active.line, "pos": selection.active.character };
+                var type: CursorType = CursorType.Select;
+        
+                if (selection.anchor.isEqual(selection.active)){
+                    type = CursorType.Point;
+                }
+                this._hubClient.updateSessionCursor(anchor, active, type);
+            }
         } else {
             this.resendDocument(null);
         }
