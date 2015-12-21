@@ -2,7 +2,7 @@
   "name": "vsshare",
   "displayName": "VSShare",
   "description": "VSShare broadcast extension for Visual Studio Code.",
-  "version": "0.0.1",
+  "version": "0.1.2",
   "publisher": "bonprosoft",
   "engines": {
     "vscode": "^0.10.1"
@@ -15,7 +15,6 @@
     "color": "#691b7c",
     "theme": "dark"
   },
-  "license": "SEE LICENSE IN LICENSE",
   "bugs": {
     "url": "https://github.com/VSShare/Extension-Code/issues"
   },
@@ -24,6 +23,7 @@
     "type": "git",
     "url": "https://github.com/VSShare/Extension-Code.git"
   },
+  "license": "MIT",
   "activationEvents": [
     "*"
   ],
