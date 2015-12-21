@@ -72,7 +72,8 @@ export default class Controller implements vscode.Disposable {
 
 		this._hubClient = new HubClient(this._logger, this._view, this);
 		this._documentManager = new DocumentManager(this._hubClient, this._logger);
-		this._documentManager.active();
+		this._hubClient.activate();
+		this._documentManager.activate();
 
 		this.registerCommand(Controller.StartBroadcastCommand);
 		this.registerCommand(Controller.StopBroadcastCommand);

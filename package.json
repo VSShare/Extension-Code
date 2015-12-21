@@ -34,7 +34,7 @@
       },
       {
         "command": "vsshare.showLogWindow",
-        "title": "Show Broadcasting window"
+        "title": "Show Broadcasting Log Window"
       }
     ],
     "configuration": {

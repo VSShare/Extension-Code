@@ -115,7 +115,7 @@ export default class DocumentManager implements vscode.Disposable {
         }
     }
 
-    active() {
+    activate() {
         let subscriptions: vscode.Disposable[] = [];
         vscode.window.onDidChangeTextEditorSelection(this.onTextEditorSelectionChanged, this, subscriptions);
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, subscriptions);
@@ -124,7 +124,10 @@ export default class DocumentManager implements vscode.Disposable {
 
         this._disposable = vscode.Disposable.from(...subscriptions);
 
-        this._activeDocumentPath = vscode.window.activeTextEditor.document.fileName;
+        var activeEditor = vscode.window.activeTextEditor;
+        if (activeEditor != null && activeEditor.document != null) {
+            this._activeDocumentPath = vscode.window.activeTextEditor.document.fileName;            
+        }
     }
 
     dispose() {

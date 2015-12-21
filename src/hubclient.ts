@@ -1,6 +1,3 @@
-/// <reference path="../typings/signalr/signalr.d.ts" />
-/// <reference path="../typings/jquery/jquery.d.ts" />
-/// <reference path="../typings/node/node.d.ts" />
 /// <reference path="../typings/vsshare/typings/vsshare/vsshare.d.ts" />
 
 'use strict';
@@ -46,6 +43,10 @@ export class HubClient implements Disposable {
         this._logger = logger;
         this._view = view;
         this._controller = controller;
+    }
+    
+    activate() {
+        this.changeBroadcastStatus(SignalRStatus.Disconnected);
     }
 
     isConnected() {
