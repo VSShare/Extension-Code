@@ -10,6 +10,20 @@
   "categories": [
     "Other"
   ],
+  "icon": "images/logo-128.png",
+  "galleryBanner": {
+    "color": "#691b7c",
+    "theme": "dark"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/VSShare/Extension-Code/issues"
+  },
+  "homepage": "https://vsshare.net/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VSShare/Extension-Code.git"
+  },
   "activationEvents": [
     "*"
   ],
